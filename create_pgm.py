@@ -1,7 +1,11 @@
 import numpy as np
 
 
-def read_raw_data(file_name:str,ROWS:int,COLS:int,OFFSET=0)->list:
+def read_raw_data(file_name:str,ROWS:int,COLS:int,OFFSET=0) -> list:
+	'''
+	This function reads a rawb file and converts it into a 2-D matrix
+	'''
+
 	FILE = open(file_name,mode='r')
 	
 	# Reading the data in the Single Dimensional form
@@ -10,13 +14,19 @@ def read_raw_data(file_name:str,ROWS:int,COLS:int,OFFSET=0)->list:
 	# Shaping the data to the two dimensional format
 	img = np.reshape(img,(ROWS,COLS)).tolist()
 
+	FILE.close()
 	return img
 
-	FILE.close()
+	
 
 def create_pgm_file(width:int,height:int,file_name:str,comment:str,img:list,greylevel=255)->None:
-	FILE = open(file_name,'wb')
+	'''
+	This function takes a 2-D matrix
+	and converts into a pgm file.
+	'''
 	
+	FILE = open(file_name,'wb')
+
 	# Defining the PGM Headers
 	pgm_header = f"P2\n#{comment}\n{str(width)} {str(height)}\n{str(greylevel)}\n" 
 	pgmHeader_byte = bytearray(pgm_header,'utf-8')
@@ -34,12 +44,18 @@ def create_pgm_file(width:int,height:int,file_name:str,comment:str,img:list,grey
 
 
 if __name__ == "__main__":
-	# ROWS = 217
-	# COLS = 181
+	ROWS 			  = 217
+	COLS 			  = 181
+	path_to_raw_data  = 'Data\\Raw Files\\'+'t1_icbm_normal_1mm_pn9_rf40.rawb'
+	path_to_save_file = 'Data\\Brain Volume\\'
 
-	img = read_raw_data('data.rawb',20,20,8)
-	create_pgm_file(20,20,"small_pgm.pgm","test.pgm",img)
-	
+
+	# Create the discrete model
 	# for i in range(181):	
-	# 	img = read_raw_data('data.rawb',ROWS,COLS,i)
-	# 	create_pgm_file(COLS,ROWS,f"E:\\Notes\\type_2_fuzzy_segmentation\\Image Slices\\TEST_{i}.pgm",f"TEST_{i}.pgm",img)
+	# 	img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
+	# 	create_pgm_file(COLS,ROWS,path_to_save_file+f"TEST_{i+1}.pgm",f"TEST_{i+1}.pgm",img,9)
+
+	# Creating the brain volume
+	for i in range(181):	
+		img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
+		create_pgm_file(COLS,ROWS,path_to_save_file+f"TEST_{i+1}.pgm",f"TEST_{i+1}.pgm",img)
