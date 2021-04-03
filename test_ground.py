@@ -72,13 +72,13 @@ while True:
 			for k in range(Y):
 				for l in range(X):
 					distance = pow((C[i] - img_vol[j][k][l]),2)
-					ln_value = log(pow(global_u[i][j][k][l],m))
+					ln_value = log(pow(global_u[i][j][k][l],M))
 					numeratr = abs(distance - ln_value - 1)
 					
 					temp = 0
 					for r in range(N):
 						distance = pow((C[r] - img_vol[j][k][l]),2)
-						ln_value = log(pow(global_u[r][j][k][l],m))
+						ln_value = log(pow(global_u[r][j][k][l],M))
 						denomint = abs(distance - ln_value - 1)
 						temp    += ((numeratr/denomint)**p)
 					global_new_u[i][j][k][l] = (1/temp) 
@@ -92,7 +92,7 @@ while True:
 					coordinates = find_neighbor(j,k,l,Z,Y,X)
 					f 			= likelihood(img_vol,local_u[i],coordinates)
 					d 		    = mean_distance(img_vol,coordinates,C[i])
-					ln_value    = log(pow(local_u[i][j][k][l],m))
+					ln_value    = log(pow(local_u[i][j][k][l],M))
 					numeratr    = abs(f*d - ln_value - 1)
 
 					temp = 0
@@ -100,7 +100,7 @@ while True:
 						coordinates = find_neighbor(j,k,l,Z,Y,X)
 						f 			= likelihood(img_vol,local_u[r],coordinates)
 						d 		    = mean_distance(img_vol,coordinates,C[r])
-						ln_value    = log(pow(local_u[r][j][k][l],m))
+						ln_value    = log(pow(local_u[r][j][k][l],M))
 						denomint    = abs(f*d - ln_value - 1)
 						temp       += ((numeratr/denomint)**p)
 					local_new_u[i][j][k][l] = (1/temp) 
