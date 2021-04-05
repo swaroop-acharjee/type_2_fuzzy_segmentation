@@ -56,7 +56,7 @@ if __name__ == "__main__":
 	
 
 	path_to_raw_data  = 'Data\\Raw Files\\'+'phantom_1.0mm_normal_crisp.rawb'
-	path_to_save_file = 'Data\\Groud Truth\\'
+	path_to_save_file = 'Data\\Ground Truth\\'
 	# Create the discrete model
 	for i in range(181):	
 		img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
