@@ -41,8 +41,8 @@ A     = 0.7					# Value of alpha
 P     = 1
 Q     = 3
 M     = 2.5
-E     = 0.01
-number_of_iterations = 2
+E     = 0.001
+number_of_iterations = 100
 
 
 
@@ -261,15 +261,22 @@ vpe 			 = sum_vpe/(X*Y*Z)
 
 
 
+print("Done!!")
+
+print(f"Final Cluster Centers: {C}")
+print(f"Total Misclassification Error: {error_percentage}")
+print(f"Average Segmentation Accuracy: {avg_sa}")
+print(f"Dice Similarity Coefficient: {dsc}")
+print(f"Partition Coefficient: {vpc}")
+print(f"Partitition Entropy: {vpe}")
 
 
-print("\n=========================================================\n")
-print("\t\t\tRESULTS\n\n\n")
-print("\n=========================================================\n")
 
-print("Final Cluster Centers: ",C)
-print("Total Misclassification Error: ",error_percentage)
-print("Average Segmentation Accuracy: ",avg_sa)
-print("Dice Similarity Coefficient: ",dsc)
-print("Partition Coefficient: ",vpc)
-print("Partitition Entropy: ",vpe)
+FILE = open('final_result.txt',mode='w')
+FILE.write(f"Final Cluster Centers: {C}")
+FILE.write(f"Total Misclassification Error: {error_percentage}")
+FILE.write(f"Average Segmentation Accuracy: {avg_sa}")
+FILE.write(f"Dice Similarity Coefficient: {dsc}")
+FILE.write(f"Partition Coefficient: {vpc}")
+FILE.write(f"Partitition Entropy: {vpe}")
+FILE.close()
