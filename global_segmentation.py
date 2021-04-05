@@ -44,5 +44,8 @@ def likelihood(img:list,local_mem:list,lst_coordinates)->list:
 		nume += local_mem[x[0]][x[1]][x[2]]*img[x[0]][x[1]][x[2]]
 		deno += img[x[0]][x[1]][x[2]]
 	return (nume/deno)
+	
+def intersection(lst1, lst2):
+    return list(set(lst1) & set(lst2))
 
 	
