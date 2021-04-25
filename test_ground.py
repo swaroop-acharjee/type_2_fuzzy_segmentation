@@ -23,8 +23,11 @@ from global_segmentation import (
 	mean_distance,
 	likelihood,
 	intersection,
+	mean_pixels,
 )
 
+import datetime
+import sys
 
 '''
 ======================================
@@ -32,37 +35,44 @@ from global_segmentation import (
 ======================================
 '''
 START = 50
-END   = 52
+END   = 53
 Z 	  = (END-START)			# depth
 Y 	  = 217					# height
 X     = 181					# col
-C     = [5,12,79,220]	   	# Values of the initial Clusters
+
+'''
+NAME	LABEL	AVG. INTENSITY
+BG		0		1
+CSF		1		10
+GM		2		100
+WM		3		140
+'''
+C     = [1,10,100,140]	   	# Values of the initial Clusters
 A     = 0.7					# Value of alpha
 P     = 1
 Q     = 3
 M     = 2.5
-E     = 0.001
+E     = 0.01
 number_of_iterations = 100
-
-
-
-
-
 p = (1/(M-1))
 
 
 # Take the 3-D image volume
 # Change this into function
-img_vol = []
+img_vol 	 = []
+ground_truth = []
+
 for j in range(START,END):
 	img_vol.append(read_pgm(f'Data\\Brain Volume\\TEST_{j}.pgm'))
+	ground_truth.append(read_pgm(f'Data\\Ground Truth\\TEST_{j}.pgm'))
 
-print(len(img_vol))
 
 # Initial value of the membership values
-global_u  = full((len(C),Z,Y,X),0.5).tolist()
-local_u   = full((len(C),Z,Y,X),0.5).tolist()
-final_u   = full((len(C),Z,Y,X),0.5).tolist()
+global_u  = full((len(C),Z,Y,X),0.25).tolist()
+local_u   = full((len(C),Z,Y,X),0.25).tolist()
+final_u   = full((len(C),Z,Y,X),0.25).tolist()
+
+time_now  = datetime.datetime.now()
 
 _ = 1
 while True:
@@ -70,7 +80,6 @@ while True:
 	local_new_u  		= full((len(C),Z,Y,X),0).tolist()
 	type_2_u     		= full((len(C),Z,Y,X),0).tolist()
 	type_2_u_normalized = full((len(C),Z,Y,X),0).tolist()
-	p_d 	  	 		= full((Z,Y,X),0).tolist()
 	N 		  	 		= len(C)
 
 	# Calculating the new global membership functions
@@ -78,16 +87,17 @@ while True:
 		for j in range(Z):
 			for k in range(Y):
 				for l in range(X):
-					distance = pow((C[i] - img_vol[j][k][l]),2)
-					ln_value = log(pow(global_u[i][j][k][l],M))
+					distance = (C[i] - img_vol[j][k][l])**2
+					ln_value = log(global_u[i][j][k][l]**M)
 					numeratr = abs(distance - ln_value - 1)
 					
 					temp = 0
 					for r in range(N):
-						distance = pow((C[r] - img_vol[j][k][l]),2)
-						ln_value = log(pow(global_u[r][j][k][l],M))
+						distance = (C[r] - img_vol[j][k][l])**2
+						ln_value = log(global_u[r][j][k][l]**M)
 						denomint = abs(distance - ln_value - 1)
 						temp    += ((numeratr/denomint)**p)
+
 					global_new_u[i][j][k][l] = (1/temp) 
 
 	# Calculating the new local membership functions
@@ -98,7 +108,7 @@ while True:
 					coordinates = find_neighbor(j,k,l,Z,Y,X)
 					f 			= likelihood(img_vol,local_u[i],coordinates)
 					d 		    = mean_distance(img_vol,coordinates,C[i])
-					ln_value    = log(pow(local_u[i][j][k][l],M))
+					ln_value    = log(local_u[i][j][k][l]**M)
 					numeratr    = abs(f*d - ln_value - 1)
 
 					temp = 0
@@ -106,46 +116,62 @@ while True:
 						coordinates = find_neighbor(j,k,l,Z,Y,X)
 						f 			= likelihood(img_vol,local_u[r],coordinates)
 						d 		    = mean_distance(img_vol,coordinates,C[r])
-						ln_value    = log(pow(local_u[r][j][k][l],M))
+						ln_value    = log(local_u[r][j][k][l]**M)
 						denomint    = abs(f*d - ln_value - 1)
 						temp       += ((numeratr/denomint)**p)
 					local_new_u[i][j][k][l] = (1/temp) 
 
-	# Calculation of the type 2 fuzzy values
-	for i in range(N):
-		for j in range(Z):
-			for k in range(Y):
-				for l in range(X):
-					coordinates = find_neighbor(j,k,l,Z,Y,X)
-					lst_u = []
-					
-					for x in coordinates:
-						lst_u.append(local_new_u[i][x[0]][x[1]][x[2]])
+	# # Calculation of the type 2 fuzzy values
+	# for i in range(N):
+	# 	for j in range(Z):
+	# 		for k in range(Y):
+	# 			for l in range(X):
+	# 				try:
+	# 					coordinates = find_neighbor(j,k,l,Z,Y,X)
+	# 					lst_u 		= []
+						
+	# 					for x in coordinates:
+	# 						lst_u.append(local_new_u[i][x[0]][x[1]][x[2]])
 
-					S = variance(lst_u)
+	# 					S = ((-2)*variance(lst_u))
 
-					lst_y = []
-					for x in lst_u:
-						temp = pow((x-local_new_u[i][j][k][l]),2)
-						lst_y.append(exp((-1/2)*(temp/S)))
+	# 					lst_y = []
+	# 					for x in lst_u:
+	# 						temp 		= (x-local_new_u[i][j][k][l])**2
+	# 						temp_term 	= exp(temp/S) 
+	# 						lst_y.append(temp_term)
 
-					lst_z = [(row/max(lst_y)) for row in lst_y]
 
-					a     = sum([row[0]*row[1] for row in zip(lst_y,lst_z)])
-					b     = sum(lst_z)
+	# 					max_y = max(lst_y)
 
-					type_2_u[i][j][k][l] = (a/b)
+	# 					sum_numerator   = 0
+	# 					sum_denominator = 0
+	# 					for x in lst_y:
+	# 						term = x/max_y
+	# 						sum_numerator   += (term*x)
+	# 						sum_denominator += term
+						
+	# 					type_2_u[i][j][k][l] = (sum_numerator/sum_denominator)
 
-	# Normalization	
-	for i in range(N):
-		for j in range(Z):
-			for k in range(Y):
-				for l in range(X):
-					s = 0
-					for r in range(N):
-						s += type_2_u[i][j][k][l]
-					type_2_u_normalized[i][j][k][l] = (type_2_u[i][j][k][l]/s) 
+	# 				except:
+	# 					print(lst_u)
+	# 					print(lst_y)
+	# 					print(local_new_u[i][j][k][l])
+	# 					sys.exit()
+
+	# # # Normalization	
+	# for i in range(N):
+	# 	for j in range(Z):
+	# 		for k in range(Y):
+	# 			for l in range(X):
+	# 				s = 0
+	# 				for r in range(N):
+	# 					s += type_2_u[r][j][k][l]
+	# 				type_2_u_normalized[i][j][k][l] = type_2_u[i][j][k][l]/s 
 	
+	global_u = global_new_u
+	local_u  = local_new_u
+
 	# Calculating the new cluster centers
 	new_C = full((len(C),),0).tolist()
 	for i in range(N):
@@ -155,25 +181,26 @@ while True:
 			for k in range(Y):
 				for l in range(X):
 					coordinates = find_neighbor(j,k,l,Z,Y,X)
-					f 	= likelihood(img_vol,type_2_u_normalized[i],coordinates)
-					nu += (A*(global_new_u[i][j][k][l]**M)*img_vol[j][k][l]) + ((1-A)*((type_2_u_normalized[i][j][k][l]**M)*f*img_vol[j][k][l]))
-					de += (A*(global_new_u[i][j][k][l]**M)) + ((1-A)*((type_2_u_normalized[i][j][k][l]**M)*f))
+					f 	        = likelihood(img_vol,local_u[i],coordinates)
+					a_mean      = mean_pixels(img_vol,coordinates) 
+					nu += (A*(global_u[i][j][k][l]**M)*img_vol[j][k][l]) + ((1-A)*((local_u[i][j][k][l]**M)*f*a_mean))
+					de += (A*(global_u[i][j][k][l]**M)) + ((1-A)*((local_u[i][j][k][l]**M)*f))
 		new_C[i] = (nu/de)	
 
-
+	
 	# Calculating the error in the iternation
 	sume = 0
 	for pair in zip(C,new_C):
 		sume += abs(pair[0] - pair[1])
 
-	e 		 = sume/2
+	e 		 = sume/N
 	C        = new_C
-	global_u = global_new_u
-	local_u  = type_2_u_normalized
 	
-	print(f"Iteraton: {_}\t\t. Error: {e}")
+	time_spend = time_now - datetime.datetime.now()
+	print(f"Iteraton: {_}\t @{datetime.datetime.now()} taking {time_spend.seconds}secs\tError: {e}")
+	print(C)
+	time_now   = datetime.datetime.now()
 
-	
 	if e < E or _ >= number_of_iterations:
 		break
 	else:
@@ -187,14 +214,13 @@ for i in range(N):
 			for l in range(X):
 				su = 0
 				for r in range(N):
-					su += (pow(global_u[r][j][k][l],P)*pow(local_u[r][j][k][l],Q))
-				final_u[i][j][k][l] = ((pow(global_u[i][j][k][l],P)*pow(local_u[i][j][k][l],Q))/su)
+					su += (global_u[r][j][k][l]**P)*(local_u[r][j][k][l]**Q)
+				final_u[i][j][k][l] = (((global_u[i][j][k][l]**P)*(local_u[i][j][k][l]**Q))/su)
 
 
-
-classifiend_img   	  = full((Z,Y,X),0).tolist()
-sum_vpc = 0
-sum_vpe = 0
+classifiend_img  = full((Z,Y,X),0).tolist()
+sum_vpc 		 = 0
+sum_vpe 		 = 0
 
 # Return a 3-D list with the classifying label.
 for j in range(Z):
@@ -203,19 +229,17 @@ for j in range(Z):
 			max_member = []
 			for i in range(len(C)):
 				max_member.append((final_u[i][j][k][l],i))
-				sum_vpc += pow(final_u[i][j][k][l],2)
+
+				sum_vpc += final_u[i][j][k][l]**2
 				sum_vpe -= final_u[i][j][k][l]*log(final_u[i][j][k][l])
 
 			classifiend_img[j][k][l]   = max(max_member)[1] 
 
 
 
-print("\n\nCreating the PGM files\n\n")
-ground_truth = []
 for j in range(Z):
 	print(START+j)
 	create_pgm_file(X,Y,f"Data\\Test Results\\TEST_{START+j}.pgm",f"Label {START + j}",classifiend_img[j],3)
-	ground_truth.append(read_pgm(f'Data\\Ground Truth\\TEST_{START+j}.pgm'))
 	print()
 
 correct_classified = 0
@@ -261,8 +285,6 @@ vpe 			 = sum_vpe/(X*Y*Z)
 
 
 
-print("Done!!")
-
 print(f"Final Cluster Centers: {C}")
 print(f"Total Misclassification Error: {error_percentage}")
 print(f"Average Segmentation Accuracy: {avg_sa}")
@@ -272,11 +294,11 @@ print(f"Partitition Entropy: {vpe}")
 
 
 
-FILE = open('final_result.txt',mode='w')
-FILE.write(f"Final Cluster Centers: {C}")
-FILE.write(f"Total Misclassification Error: {error_percentage}")
-FILE.write(f"Average Segmentation Accuracy: {avg_sa}")
-FILE.write(f"Dice Similarity Coefficient: {dsc}")
-FILE.write(f"Partition Coefficient: {vpc}")
-FILE.write(f"Partitition Entropy: {vpe}")
-FILE.close()
+# FILE = open('final_result.txt',mode='w')
+# FILE.write(f"Final Cluster Centers: {C}")
+# FILE.write(f"Total Misclassification Error: {error_percentage}")
+# FILE.write(f"Average Segmentation Accuracy: {avg_sa}")
+# FILE.write(f"Dice Similarity Coefficient: {dsc}")
+# FILE.write(f"Partition Coefficient: {vpc}")
+# FILE.write(f"Partitition Entropy: {vpe}")
+# FILE.close()

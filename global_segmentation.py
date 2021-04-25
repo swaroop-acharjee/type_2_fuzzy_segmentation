@@ -15,34 +15,64 @@ def read_pgm(file_path:str)->list:
 		return img
 
 def find_neighbor(j:int,k:int,l:int,Z:int,Y:int,X:int)->list:
-	coordinates = []
-	
-	for z in [-1,0,1]:
-		for y in [-1,0,1]:
-			for x in [-1,0,1]:
-				z_c, y_c, x_c = j + z, k + y, l + x
+	coordinates = 	[]
+	corr_list 	= 	[
+						(-1,-1,-1), (-1,-1,0),(-1,-1,1),
+						(-1,0,-1), (-1,0,1), (-1,0,0),
+						(-1,1,-1),(-1,1,0),(-1,1,1),
 
-				condition_1 = (z_c >= 0) and (y_c >= 0) and (x_c >= 0) 		# Checking if all the index are positive
-				condition_2 = z_c <= (Z-1) 									# Checking if z is in the range
-				condition_3 = y_c <= (Y-1) 									# Checking if y is in the range
-				condition_4 = x_c <= (X-1) 									# Checking if x is in the range
+						(0,-1,-1), (0,-1,0),(0,-1,1),
+						(0,0,-1), (0,0,1),
+						(0,1,-1),(0,1,0),(0,1,1),
 
-				if condition_1 and condition_2 and condition_3 and condition_4:
-					coordinates.append((z_c,y_c,x_c))
-					
+						(1,-1,-1), (1,-1,0),(1,-1,1),
+						(1,0,-1), (1,0,1), (1,0,0),
+						(1,1,-1),(1,1,0),(1,1,1), 
+					]
+
+	for c in corr_list:
+		new_j = j + c[0]
+		new_k = k + c[1]
+		new_l = l + c[2]
+
+		condition_1 = (new_j >= 0) and (new_k >= 0) and (new_l >= 0) 		# Checking if all the index are positive
+		condition_2 = new_j <= (Z-1) 										# Checking if z is in the range
+		condition_3 = new_k <= (Y-1) 										# Checking if y is in the range
+		condition_4 = new_l <= (X-1) 										# Checking if x is in the range
+
+		if condition_1 and condition_2 and condition_3 and condition_4:
+			temp  = (new_j,new_k,new_l)
+			coordinates.append(temp)
+
 	return coordinates
 
 def mean_distance(img:list,lst_coordinates:list,cluster_center:int)->list:
-	coordinates = [abs(cluster_center - img[x[0]][x[1]][x[2]]) for x in lst_coordinates]
-	return mean(coordinates)
+	sum_m = 0
+	N     = len(lst_coordinates)
+	
+	for j,k,l in lst_coordinates:
+			sum_m += (cluster_center - img[j][k][l])**2
+
+	return sum_m/N
+
+def mean_pixels(img:list,lst_coordinates:list)->float:
+	sum_m = 0
+	N     = len(lst_coordinates)
+	
+	for j,k,l in lst_coordinates:
+		sum_m += img[j][k][l]
+	
+	return (sum_m/N)
 
 
 def likelihood(img:list,local_mem:list,lst_coordinates)->list:
 	nume = 0
-	deno = 0
-	for x in lst_coordinates:
-		nume += local_mem[x[0]][x[1]][x[2]]*img[x[0]][x[1]][x[2]]
-		deno += img[x[0]][x[1]][x[2]]
+	deno = 0.0001
+
+	for j,k,l in lst_coordinates:
+		nume += local_mem[j][k][l]*img[j][k][l]
+		deno += img[j][k][l]
+
 	return (nume/deno)
 	
 def intersection(lst1, lst2):

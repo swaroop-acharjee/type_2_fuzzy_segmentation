@@ -47,17 +47,18 @@ if __name__ == "__main__":
 	ROWS 			  = 217
 	COLS 			  = 181
 	
-	path_to_raw_data  = 'Data\\Raw Files\\'+'t1_icbm_normal_1mm_pn9_rf40.rawb'
+	path_to_raw_data  = 'Data\\Raw Files\\'+'9_20.rawb'
 	path_to_save_file = 'Data\\Brain Volume\\'
+	
 	# Creating the brain volume
 	for i in range(181):	
 		img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
 		create_pgm_file(COLS,ROWS,path_to_save_file+f"TEST_{i+1}.pgm",f"TEST_{i+1}.pgm",img)
 	
 
-	path_to_raw_data  = 'Data\\Raw Files\\'+'phantom_1.0mm_normal_crisp.rawb'
-	path_to_save_file = 'Data\\Ground Truth\\'
-	# Create the discrete model
-	for i in range(181):	
-		img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
-		create_pgm_file(COLS,ROWS,path_to_save_file+f"TEST_{i+1}.pgm",f"TEST_{i+1}.pgm",img,9)
+	# path_to_raw_data  = 'Data\\Raw Files\\'+'phantom_1.0mm_normal_crisp.rawb'
+	# path_to_save_file = 'Data\\Ground Truth\\'
+	# # Create the discrete model
+	# for i in range(181):	
+	# 	img = read_raw_data(path_to_raw_data,ROWS,COLS,i)
+	# 	create_pgm_file(COLS,ROWS,path_to_save_file+f"TEST_{i+1}.pgm",f"TEST_{i+1}.pgm",img,9)

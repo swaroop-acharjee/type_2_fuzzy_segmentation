@@ -1,0 +1,1 @@
+Final Cluster Centers: [1.8949782136931266, 21.241255995170885, 73.16866328392177, 98.39437322550158]Total Misclassification Error: 37.46102053024807Average Segmentation Accuracy: 0.6870236556864213Dice Similarity Coefficient: 0.5968383730992102Partition Coefficient: 0.8492560232811964Partitition Entropy: 0.2555839621717686
